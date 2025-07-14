@@ -21,7 +21,7 @@ if [ ! -e "./uv.lock" ]; then
 fi
 
 if [ ! -e "./$INSTALL_CJE1_TOOLS_FILE_NAME" ]; then
-  echo "[ERROR] './$INSTALL_CJE1_TOOLS_FILE_NAME' not found in the pwd. Please place the directory."
+  echo "[ERROR] './$INSTALL_CJE1_TOOLS_FILE_NAME' not found in the pwd. Please download the file from manaba (student only) and place in the pwd."
 fi
 
 sh ./$INSTALL_CJE1_TOOLS_FILE_NAME
