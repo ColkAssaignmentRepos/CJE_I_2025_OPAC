@@ -29,4 +29,4 @@ COPY ./ ${APP_DIR}
 # ./ を PYTHONPATH に追加
 ENV PYTHONPATH="${APP_DIR}:${PYTHONPATH}"
 
-ENTRYPOINT ["sh", "./entrypoint.sh"]
+ENTRYPOINT ["uv", "run", "--"]
