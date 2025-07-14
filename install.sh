@@ -8,6 +8,7 @@
 
 # Constants
 GIT_HTTPS_URL_TO_CLONE="https://github.com/ColkAssaignmentRepos/CJE_I_2025_OPAC_API.git"
+INSTALL_CJE1_TOOLS_FILE_NAME="cje1install.sh"
 
 # Check if 'uv' is installed; if not, install it
 if ! command -v uv >/dev/null 2>&1; then
@@ -19,9 +20,13 @@ if [ ! -e "./uv.lock" ]; then
   git clone --recursive "$GIT_HTTPS_URL_TO_CLONE" .
 fi
 
-if [ ! -e "./cje1gw/" ]; then
-  echo "[ERROR] './cje1gw' not found in the pwd. Please place the directory."
+if [ ! -e "./$INSTALL_CJE1_TOOLS_FILE_NAME" ]; then
+  echo "[ERROR] './$INSTALL_CJE1_TOOLS_FILE_NAME' not found in the pwd. Please place the directory."
 fi
+
+sh ./$INSTALL_CJE1_TOOLS_FILE_NAME
+
+cp -R /tmp/pycode/cje1gw/ ./cje1gw
 
 # Set up the environment
 uv venv && \
