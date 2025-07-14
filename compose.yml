@@ -10,6 +10,8 @@ services:
     working_dir: /app
     ports:
       - "8888:80"
+    volumes:
+      - ./cje1install.sh:/app/cje1install.sh
     develop:
       watch:
         - action: sync
