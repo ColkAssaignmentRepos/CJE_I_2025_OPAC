@@ -4,7 +4,7 @@
 #  curl, git
 
 # Usage:
-#   ./entrypoint.sh "python main.py"
+#   ./install.sh "python main.py"
 
 # Constants
 GIT_HTTPS_URL_TO_CLONE="https://github.com/ColkAssaignmentRepos/CJE_I_2025_OPAC_API.git"
@@ -19,14 +19,14 @@ if [ ! -e "./uv.lock" ]; then
   git clone --recursive "$GIT_HTTPS_URL_TO_CLONE" .
 fi
 
+if [ ! -e "./cje1gw/" ]; then
+  echo "[ERROR] './cje1gw' not found in the pwd. Please place the directory."
+fi
+
 # Set up the environment
 uv venv && \
 uv sync
 
-# Execute the given command using uv run
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <command to run via uv run>"
-  exit 1
-fi
+echo "[INFO] Installed."
 
-uv run -- "$@"
+exit 0
