@@ -1,0 +1,7 @@
+[project]
+name = "cje-i-2025-opac-api"
+version = "0.0.0"
+description = "Repository for the OPAC development assignment in Knowledge Information Exercise I, University of Tsukuba, 2025."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
