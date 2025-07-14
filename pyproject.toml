@@ -11,3 +11,6 @@ dev = [
     "mypy>=1.16.1",
     "ruff>=0.12.3",
 ]
+
+[tools.mypy]
+strict = true
