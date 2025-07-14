@@ -28,5 +28,3 @@ COPY ./ ${APP_DIR}
 # import で参照できるようにするため
 # ./ を PYTHONPATH に追加
 ENV PYTHONPATH="${APP_DIR}:${PYTHONPATH}"
-
-ENTRYPOINT ["uv", "run", "--", "sh", "-c"]
