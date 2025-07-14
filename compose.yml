@@ -1,0 +1,21 @@
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: ./docker/api/Dockerfile
+    image: cje-i-2025-opac-api
+    container_name: api
+    command: [ "sleep", "infinity" ]
+    tty: true
+    working_dir: /app
+    ports:
+      - "8888:80"
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: ./
+          ignore:
+            - ./.venv/
+        - action: rebuild
+          path: ./uv.lock
