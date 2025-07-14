@@ -208,3 +208,6 @@ __marimo__/
 
 # Playground
 playground/
+
+# CJE1 Tools
+cje1install.sh

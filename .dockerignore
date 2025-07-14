@@ -90,3 +90,6 @@ venv/
 
 # VS Code
 .vscode/
+
+# CJE1 Tools
+cje1install.sh
