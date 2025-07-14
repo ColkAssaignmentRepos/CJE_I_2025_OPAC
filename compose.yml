@@ -5,7 +5,7 @@ services:
       dockerfile: ./docker/api/Dockerfile
     image: cje-i-2025-opac-api
     container_name: cje-i-2025-opac-api
-    command: [ "sleep", "infinity" ]
+    command: "sh ./install.sh && sleep infinity"
     tty: true
     working_dir: /app
     ports:
