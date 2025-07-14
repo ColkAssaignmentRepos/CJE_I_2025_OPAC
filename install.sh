@@ -22,6 +22,7 @@ fi
 
 if [ ! -e "./$INSTALL_CJE1_TOOLS_FILE_NAME" ]; then
   echo "[ERROR] './$INSTALL_CJE1_TOOLS_FILE_NAME' not found in the pwd. Please download the file from manaba (student only) and place in the pwd."
+  exit 1
 fi
 
 sh ./$INSTALL_CJE1_TOOLS_FILE_NAME
