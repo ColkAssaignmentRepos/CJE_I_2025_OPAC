@@ -4,4 +4,17 @@ version = "0.0.0"
 description = "Repository for the OPAC development assignment in Knowledge Information Exercise I, University of Tsukuba, 2025."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+  "pydantic>=2.11.7",
+  "pydantic-settings>=2.10.1",
+  "sqlalchemy>=2.0.41",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.16.1",
+  "ruff>=0.12.3",
+]
+
+[tools.mypy]
+strict = true
