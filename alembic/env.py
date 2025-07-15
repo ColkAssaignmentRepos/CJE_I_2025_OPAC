@@ -27,19 +27,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the database URL from the config file
-# Use a default value if the config is not set
 app_config = Config()
-db_path = (
-    app_config.DATABASE_FILE_PATH
-    if app_config.DATABASE_FILE_PATH.is_absolute()
-    else project_root / app_config.DATABASE_FILE_PATH
-)
-# Fallback to a local sqlite file if the configured path's parent does not exist
-if not db_path.parent.exists():
-    db_path = project_root / "database.sqlite3"
-    print(f"Warning: Defaulting to local database at {db_path}")
-
-config.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
+config.set_main_option("sqlalchemy.url", app_config.EFFECTIVE_ASYNC_DATABASE_URL.replace("+aiosqlite", ""))
 
 # add your model's MetaData object here
 # for 'autogenerate' support
