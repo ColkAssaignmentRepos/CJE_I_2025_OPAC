@@ -57,7 +57,9 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
             self._current_record_dict["header"]["identifier"] = self._current_text
             # Also add it to the dc:identifier list for consistency
             dc_dict = self._current_record_dict["metadata"]["dc"]
-            dc_dict.setdefault("identifier", []).append({"value": self._current_text, "type": "dcterms:URI"})
+            dc_dict.setdefault("identifier", []).append(
+                {"value": self._current_text, "type": "dcterms:URI"}
+            )
         elif localname == "datestamp" and ns_uri == NAMESPACES["oai"]:
             self._current_record_dict["header"]["datestamp"] = self._current_text
 
