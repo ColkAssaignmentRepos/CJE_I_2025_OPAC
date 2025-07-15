@@ -96,3 +96,6 @@ cje1install.sh
 
 # database
 *.sqlite3
+
+# data used to initialize
+init_data/
