@@ -13,7 +13,7 @@ if __name__ == "__main__":
     print(
         "=========================== NOW YOU CAN ACCESS AT ==========================="
     )
-    print(FORWARD_ADDR_PORT)
+    print(FORWARD_ADDR_URL)
     print(
         "============================================================================="
     )
