@@ -9,7 +9,7 @@ app = FastAPI(
     description="API for searching library records.",
     version="0.1.0",
     docs_url="/api/docs",  # Move docs to avoid conflict
-    openapi_url="/api/openapi.json"  # Move openapi to avoid conflict
+    openapi_url="/api/openapi.json",  # Move openapi to avoid conflict
 )
 
 # --- API Router ---

@@ -10,8 +10,12 @@ if __name__ == "__main__":
 
     print("SERVING AT:", FORWARD_ADDR_URL)
 
-    print("=========================== NOW YOU CAN ACCESS AT ===========================")
+    print(
+        "=========================== NOW YOU CAN ACCESS AT ==========================="
+    )
     print(FORWARD_ADDR_PORT)
-    print("=============================================================================")
+    print(
+        "============================================================================="
+    )
 
     uvicorn.run("src.main:app", host="0.0.0.0", port=API_PORT, reload=True)
