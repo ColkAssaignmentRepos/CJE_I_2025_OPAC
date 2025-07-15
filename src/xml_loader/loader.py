@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from src.xml_loader._parser import _parse_dcndl_xml
 from src.xml_loader._schema import _Record
-from src.model.record import Record
+from src.model import Record
 
 
 def load_xml(path: Path) -> List[Record]:

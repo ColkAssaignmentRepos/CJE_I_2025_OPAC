@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from src.model.record import Record, Header, Metadata, DcndlSimple
+from src.model import Record, Header, Metadata, DcndlSimple
 
 
 class _TypedValue(BaseModel):
