@@ -30,12 +30,14 @@ class APIResponse(BaseModel):
 
 @router.get("/search", response_model=PaginatedRecordResponse)
 async def search_records(
-        db: AsyncSession = Depends(get_db),
-        q: str | None = Query(None, description="Search query for all fields (title and creator)."),
-        title: str | None = Query(None, description="Search query for title."),
-        creator: str | None = Query(None, description="Search query for creator."),
-        page: int = Query(1, ge=1, description="Page number."),
-        per_page: int = Query(20, ge=1, le=100, description="Items per page."),
+    db: AsyncSession = Depends(get_db),
+    q: str | None = Query(
+        None, description="Search query for all fields (title and creator)."
+    ),
+    title: str | None = Query(None, description="Search query for title."),
+    creator: str | None = Query(None, description="Search query for creator."),
+    page: int = Query(1, ge=1, description="Page number."),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page."),
 ):
     """
     Search for records with pagination.

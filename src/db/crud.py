@@ -12,7 +12,7 @@ from src.db._convert import _convert_sa_to_pydantic
 
 
 async def __get_or_create_creator(
-        db_session: AsyncSession, name: str
+    db_session: AsyncSession, name: str
 ) -> sa_model.Creator:
     """
     Retrieve a creator by name, or create it if it doesn't exist.
@@ -29,7 +29,7 @@ async def __get_or_create_creator(
 
 
 async def create_record(
-        db_session: AsyncSession, pydantic_record: model.Record
+    db_session: AsyncSession, pydantic_record: model.Record
 ) -> model.Record:
     """
     Converts a Pydantic Record to a SQLAlchemy Record and saves it to the database.
@@ -110,12 +110,12 @@ async def create_record(
 
 
 async def search_records(
-        db_session: AsyncSession,
-        q: str | None = None,
-        title: str | None = None,
-        creator: str | None = None,
-        skip: int = 0,
-        limit: int = 20,
+    db_session: AsyncSession,
+    q: str | None = None,
+    title: str | None = None,
+    creator: str | None = None,
+    skip: int = 0,
+    limit: int = 20,
 ) -> Tuple[List[model.Record], int]:
     """
     Searches for records in the database with pagination.
@@ -139,7 +139,9 @@ async def search_records(
             any_clauses.append(
                 or_(
                     sa_model.Record.title.ilike(f"%{term}%"),
-                    sa_model.Record.creators.any(sa_model.Creator.name.ilike(f"%{term}%")),
+                    sa_model.Record.creators.any(
+                        sa_model.Creator.name.ilike(f"%{term}%")
+                    ),
                 )
             )
         filters.append(and_(*any_clauses))
