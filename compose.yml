@@ -13,6 +13,7 @@ services:
       - "8888:80"
     volumes:
       - ./cje1install.sh:/app/cje1install.sh
+      - ./init_data:/app/init_data
       - "./database.sqlite3:/mount/gdrive/My Drive/cje1s2513929/database.sqlite3"
     develop:
       watch:

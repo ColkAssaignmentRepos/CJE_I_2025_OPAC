@@ -35,4 +35,6 @@ uv sync
 
 echo "[INFO] Installed."
 
+export PYTHONPATH="$PYTHONPATH:./"
+
 exit 0
