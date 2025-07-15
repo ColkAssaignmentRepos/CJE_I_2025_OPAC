@@ -12,7 +12,10 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 from config import Config
+# noinspection PyProtectedMember
 from src.db._model import Base
+# noinspection PyUnresolvedReferences,PyProtectedMember
+from src.db import _model  # Ensure all models are registered via the import
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -11,7 +11,13 @@ from sqlalchemy import (
     UniqueConstraint,
     UUID,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, declarative_base
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+    declared_attr,
+    declarative_base,
+)
 
 Base = declarative_base()
 
