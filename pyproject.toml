@@ -20,3 +20,4 @@ dev = [
 
 [tool.mypy]
 strict = true
+plugins = "sqlalchemy.ext.mypy.plugin"
