@@ -4,7 +4,14 @@ import xml.sax
 from typing import Callable, List, Optional, Tuple
 from xml.sax.xmlreader import AttributesNSImpl
 
-from src.xml_loader._schema import _Record, _Header, _Metadata, _DcndlSimple, _TypedValue, _ResourceLink
+from src.xml_loader._schema import (
+    _Record,
+    _Header,
+    _Metadata,
+    _DcndlSimple,
+    _TypedValue,
+    _ResourceLink,
+)
 
 NAMESPACES = {
     "oai": "http://www.openarchives.org/OAI/2.0/",
@@ -28,7 +35,12 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
         self._current_record: Optional[_Record] = None
         self._current_attributes: AttributesNSImpl = AttributesNSImpl({}, {})
 
-    def startElementNS(self, name: Tuple[Optional[str], str], qname: Optional[str], attrs: AttributesNSImpl) -> None:
+    def startElementNS(
+        self,
+        name: Tuple[Optional[str], str],
+        qname: Optional[str],
+        attrs: AttributesNSImpl,
+    ) -> None:
         ns_uri, localname = name
         self._path.append(localname)
         self._current_text = ""
@@ -44,7 +56,9 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
             elif localname == "dc" and self._current_record.metadata:
                 self._current_record.metadata.dc = _DcndlSimple()
 
-    def endElementNS(self, name: Tuple[Optional[str], str], qname: Optional[str]) -> None:
+    def endElementNS(
+        self, name: Tuple[Optional[str], str], qname: Optional[str]
+    ) -> None:
         ns_uri, localname = name
 
         if not self._current_record:
@@ -90,10 +104,14 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
 
             elif localname == "identifier" and ns_uri == NAMESPACES["dc"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.identifier.append(_TypedValue(value=self._current_text, type=type_attr))
+                dc.identifier.append(
+                    _TypedValue(value=self._current_text, type=type_attr)
+                )
             elif localname == "publicationPlace" and ns_uri == NAMESPACES["dcndl"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.publication_place.append(_TypedValue(value=self._current_text, type=type_attr))
+                dc.publication_place.append(
+                    _TypedValue(value=self._current_text, type=type_attr)
+                )
             elif localname == "issued" and ns_uri == NAMESPACES["dcterms"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
                 dc.issued.append(_TypedValue(value=self._current_text, type=type_attr))
@@ -103,13 +121,16 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
 
             elif localname == "seeAlso" and ns_uri == NAMESPACES["rdfs"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
-                if res_attr: dc.see_also.append(_ResourceLink(resource=res_attr))
+                if res_attr:
+                    dc.see_also.append(_ResourceLink(resource=res_attr))
             elif localname == "sameAs" and ns_uri == NAMESPACES["owl"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
-                if res_attr: dc.same_as.append(_ResourceLink(resource=res_attr))
+                if res_attr:
+                    dc.same_as.append(_ResourceLink(resource=res_attr))
             elif localname == "thumbnail" and ns_uri == NAMESPACES["foaf"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
-                if res_attr: dc.thumbnail.append(_ResourceLink(resource=res_attr))
+                if res_attr:
+                    dc.thumbnail.append(_ResourceLink(resource=res_attr))
 
         self._path.pop()
 
@@ -117,7 +138,9 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
         self._current_text += content.strip()
 
 
-def _parse_dcndl_xml(file_path: str, record_callback: Callable[[_Record], None]) -> None:
+def _parse_dcndl_xml(
+    file_path: str, record_callback: Callable[[_Record], None]
+) -> None:
     parser = xml.sax.make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, True)
     handler = _DcndlSaxHandler(record_callback)

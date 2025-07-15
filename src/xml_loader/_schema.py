@@ -62,6 +62,8 @@ class _Record(BaseModel):
         return Record(
             header=Header(**private_record.header.model_dump(exclude_none=True)),
             metadata=Metadata(
-                dc=DcndlSimple(**private_record.metadata.dc.model_dump(exclude_none=True))
-            )
+                dc=DcndlSimple(
+                    **private_record.metadata.dc.model_dump(exclude_none=True)
+                )
+            ),
         )
