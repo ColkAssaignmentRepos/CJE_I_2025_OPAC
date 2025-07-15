@@ -6,7 +6,7 @@ services:
     image: cje-i-2025-opac-api
     container_name: cje-i-2025-opac-api
     command: >
-      sh -c "sh ./install.sh && exec tail -f /dev/null"
+      sh -c "sh ./install.sh && uv run run.py"
     tty: true
     working_dir: /app
     ports:
