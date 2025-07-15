@@ -114,7 +114,7 @@ class Creator(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
 
-    name: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String, unique=False, index=True)
 
     records: Mapped[List["Record"]] = relationship(
         secondary="record_creator_association", back_populates="creators"
