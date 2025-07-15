@@ -1,17 +1,8 @@
 from __future__ import annotations
 
 import xml.sax
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Dict, Any
 from xml.sax.xmlreader import AttributesNSImpl
-
-from src.xml_loader._schema import (
-    _Record,
-    _Header,
-    _Metadata,
-    _DcndlSimple,
-    _TypedValue,
-    _ResourceLink,
-)
 
 NAMESPACES = {
     "oai": "http://www.openarchives.org/OAI/2.0/",
@@ -27,12 +18,12 @@ NAMESPACES = {
 
 
 class _DcndlSaxHandler(xml.sax.ContentHandler):
-    def __init__(self, record_callback: Callable[[_Record], None]) -> None:
+    def __init__(self, record_callback: Callable[[Dict[str, Any]], None]) -> None:
         super().__init__()
         self.record_callback = record_callback
         self._path: List[str] = []
         self._current_text: str = ""
-        self._current_record: Optional[_Record] = None
+        self._current_record_dict: Optional[Dict[str, Any]] = None
         self._current_attributes: AttributesNSImpl = AttributesNSImpl({}, {})
 
     def startElementNS(
@@ -47,90 +38,86 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
         self._current_attributes = attrs
 
         if localname == "record" and ns_uri == NAMESPACES["oai"]:
-            self._current_record = _Record()
-        elif self._current_record:
-            if localname == "header":
-                self._current_record.header = _Header()
-            elif localname == "metadata":
-                self._current_record.metadata = _Metadata()
-            elif localname == "dc" and self._current_record.metadata:
-                self._current_record.metadata.dc = _DcndlSimple()
+            self._current_record_dict = {"header": {}, "metadata": {"dc": {}}}
 
     def endElementNS(
         self, name: Tuple[Optional[str], str], qname: Optional[str]
     ) -> None:
         ns_uri, localname = name
 
-        if not self._current_record:
+        if not self._current_record_dict:
             self._path.pop()
             return
 
         if localname == "record" and ns_uri == NAMESPACES["oai"]:
-            self.record_callback(self._current_record)
-            self._current_record = None
+            self.record_callback(self._current_record_dict)
+            self._current_record_dict = None
 
-        elif self._current_record.header and not self._current_record.metadata:
-            if localname == "identifier" and ns_uri == NAMESPACES["oai"]:
-                self._current_record.header.identifier = self._current_text
-            elif localname == "datestamp" and ns_uri == NAMESPACES["oai"]:
-                self._current_record.header.datestamp = self._current_text
+        elif localname == "identifier" and ns_uri == NAMESPACES["oai"]:
+            self._current_record_dict["header"]["identifier"] = self._current_text
+        elif localname == "datestamp" and ns_uri == NAMESPACES["oai"]:
+            self._current_record_dict["header"]["datestamp"] = self._current_text
 
-        elif self._current_record.metadata and self._current_record.metadata.dc:
-            dc = self._current_record.metadata.dc
-            if localname == "title" and ns_uri == NAMESPACES["dc"]:
-                dc.title = self._current_text
-            elif localname == "alternative" and ns_uri == NAMESPACES["dcterms"]:
-                dc.alternative = self._current_text
-            elif localname == "seriesTitle" and ns_uri == NAMESPACES["dcndl"]:
-                dc.series_title = self._current_text
-            elif localname == "creator" and ns_uri == NAMESPACES["dc"]:
-                dc.creator.append(self._current_text)
-            elif localname == "publisher" and ns_uri == NAMESPACES["dc"]:
-                dc.publisher = self._current_text
-            elif localname == "date" and ns_uri == NAMESPACES["dc"]:
-                dc.date = self._current_text
-            elif localname == "language" and ns_uri == NAMESPACES["dc"]:
-                dc.language = self._current_text
-            elif localname == "extent" and ns_uri == NAMESPACES["dcterms"]:
-                dc.extent = self._current_text
-            elif localname == "materialType" and ns_uri == NAMESPACES["dcndl"]:
-                dc.material_type = self._current_text
-            elif localname == "accessRights" and ns_uri == NAMESPACES["dcterms"]:
-                dc.access_rights = self._current_text
-            elif localname == "titleTranscription" and ns_uri == NAMESPACES["dcndl"]:
-                dc.title_transcription = self._current_text
-            elif localname == "volume" and ns_uri == NAMESPACES["dcndl"]:
-                dc.volume = self._current_text
+        elif "dc" in self._current_record_dict["metadata"]:
+            dc_dict = self._current_record_dict["metadata"]["dc"]
 
+            # --- Simple text fields (last one wins) ---
+            simple_fields = {
+                (NAMESPACES["dc"], "title"): "title",
+                (NAMESPACES["dc"], "publisher"): "publisher",
+                (NAMESPACES["dcterms"], "alternative"): "alternative",
+                (NAMESPACES["dcndl"], "seriesTitle"): "series_title",
+                (NAMESPACES["dc"], "date"): "date",
+                (NAMESPACES["dc"], "language"): "language",
+                (NAMESPACES["dcterms"], "extent"): "extent",
+                (NAMESPACES["dcndl"], "materialType"): "material_type",
+                (NAMESPACES["dcterms"], "accessRights"): "access_rights",
+                (NAMESPACES["dcndl"], "titleTranscription"): "title_transcription",
+                (NAMESPACES["dcndl"], "volume"): "volume",
+            }
+            if ns_uri is not None and (ns_uri, localname) in simple_fields:
+                field_key = simple_fields[(ns_uri, localname)]
+                dc_dict[field_key] = self._current_text
+
+            # --- List fields ---
+            elif (ns_uri, localname) == (NAMESPACES["dc"], "creator"):
+                dc_dict.setdefault("creator", []).append(self._current_text)
+
+            # --- Complex fields ---
             elif localname == "identifier" and ns_uri == NAMESPACES["dc"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.identifier.append(
-                    _TypedValue(value=self._current_text, type=type_attr)
+                dc_dict.setdefault("identifier", []).append(
+                    {"value": self._current_text, "type": type_attr}
                 )
             elif localname == "publicationPlace" and ns_uri == NAMESPACES["dcndl"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.publication_place.append(
-                    _TypedValue(value=self._current_text, type=type_attr)
+                dc_dict.setdefault("publication_place", []).append(
+                    {"value": self._current_text, "type": type_attr}
                 )
             elif localname == "issued" and ns_uri == NAMESPACES["dcterms"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.issued.append(_TypedValue(value=self._current_text, type=type_attr))
+                dc_dict.setdefault("issued", []).append(
+                    {"value": self._current_text, "type": type_attr}
+                )
             elif localname == "subject" and ns_uri == NAMESPACES["dc"]:
                 type_attr = self._current_attributes.get((NAMESPACES["xsi"], "type"))
-                dc.subject.append(_TypedValue(value=self._current_text, type=type_attr))
+                dc_dict.setdefault("subject", []).append(
+                    {"value": self._current_text, "type": type_attr}
+                )
 
+            # --- Resource links ---
             elif localname == "seeAlso" and ns_uri == NAMESPACES["rdfs"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
                 if res_attr:
-                    dc.see_also.append(_ResourceLink(resource=res_attr))
+                    dc_dict.setdefault("see_also", []).append({"resource": res_attr})
             elif localname == "sameAs" and ns_uri == NAMESPACES["owl"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
                 if res_attr:
-                    dc.same_as.append(_ResourceLink(resource=res_attr))
+                    dc_dict.setdefault("same_as", []).append({"resource": res_attr})
             elif localname == "thumbnail" and ns_uri == NAMESPACES["foaf"]:
                 res_attr = self._current_attributes.get((NAMESPACES["rdf"], "resource"))
                 if res_attr:
-                    dc.thumbnail.append(_ResourceLink(resource=res_attr))
+                    dc_dict.setdefault("thumbnail", []).append({"resource": res_attr})
 
         self._path.pop()
 
@@ -139,7 +126,7 @@ class _DcndlSaxHandler(xml.sax.ContentHandler):
 
 
 def _parse_dcndl_xml(
-    file_path: str, record_callback: Callable[[_Record], None]
+    file_path: str, record_callback: Callable[[Dict[str, Any]], None]
 ) -> None:
     parser = xml.sax.make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, True)

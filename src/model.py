@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Generic
 
 from pydantic import BaseModel, Field
 
+T = TypeVar("T")
 
-class TypedValue(BaseModel):
-    value: str
+
+class TypedValue(BaseModel, Generic[T]):
+    value: T
     type: Optional[str] = None
 
 
@@ -22,7 +24,7 @@ class Header(BaseModel):
 
 class DcndlSimple(BaseModel):
     title: str
-    identifier: List[TypedValue] = Field(..., min_length=1)
+    identifier: List[TypedValue[str]] = Field(..., min_length=1)
     creator: List[str] = []
     publisher: Optional[str] = None
     alternative: Optional[str] = None
@@ -34,9 +36,11 @@ class DcndlSimple(BaseModel):
     access_rights: Optional[str] = None
     title_transcription: Optional[str] = None
     volume: Optional[str] = None
-    publication_place: List[TypedValue] = []
-    issued: List[TypedValue] = []
-    subject: List[TypedValue] = []
+
+    publication_place: List[TypedValue[str]] = []
+    issued: List[TypedValue[datetime | str]] = []
+    subject: List[TypedValue[str]] = []
+
     see_also: List[ResourceLink] = []
     same_as: List[ResourceLink] = []
     thumbnail: List[ResourceLink] = []
