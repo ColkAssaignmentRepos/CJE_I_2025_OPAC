@@ -5,7 +5,7 @@ from pathlib import Path
 
 from src.db._model import Base
 from src.db.crud import create_record
-from src.db.session import get_async_session, async_engine
+from src.db.session import get_db, async_engine
 from src.xml_loader.loader import load_xml
 
 project_root = Path(__file__).resolve().parent
@@ -42,7 +42,7 @@ async def populate():
     total_saved_count = 0
     batch_size = 1000
 
-    async for session in get_async_session():
+    async for session in get_db():
         for xml_file_path in xml_files:
             print(f"   - Processing file: {xml_file_path.name}")
             try:
