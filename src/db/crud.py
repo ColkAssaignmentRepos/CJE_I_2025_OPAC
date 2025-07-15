@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from typing import List, Tuple
+
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -105,3 +107,63 @@ async def create_record(
     loaded_db_record = result.scalar_one()
 
     return _convert_sa_to_pydantic(loaded_db_record)
+
+
+async def search_records(
+        db_session: AsyncSession,
+        q: str | None = None,
+        title: str | None = None,
+        creator: str | None = None,
+        skip: int = 0,
+        limit: int = 20,
+) -> Tuple[List[model.Record], int]:
+    """
+    Searches for records in the database with pagination.
+    """
+    stmt = select(sa_model.Record).options(
+        selectinload(sa_model.Record.creators),
+        selectinload(sa_model.Record.identifiers),
+        selectinload(sa_model.Record.publication_places),
+        selectinload(sa_model.Record.issued),
+        selectinload(sa_model.Record.subjects),
+        selectinload(sa_model.Record.see_alsos),
+        selectinload(sa_model.Record.same_as_links),
+        selectinload(sa_model.Record.thumbnails),
+    )
+
+    filters = []
+    if q:
+        search_terms = q.split()
+        any_clauses = []
+        for term in search_terms:
+            any_clauses.append(
+                or_(
+                    sa_model.Record.title.ilike(f"%{term}%"),
+                    sa_model.Record.creators.any(sa_model.Creator.name.ilike(f"%{term}%")),
+                )
+            )
+        filters.append(and_(*any_clauses))
+
+    if title:
+        filters.append(sa_model.Record.title.ilike(f"%{title}%"))
+
+    if creator:
+        stmt = stmt.join(sa_model.Record.creators)
+        filters.append(sa_model.Creator.name.ilike(f"%{creator}%"))
+
+    if filters:
+        stmt = stmt.where(and_(*filters)).distinct()
+
+    # Get the total count of items before pagination
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total_items_result = await db_session.execute(count_stmt)
+    total_items = total_items_result.scalar_one()
+
+    # Apply pagination
+    paginated_stmt = stmt.offset(skip).limit(limit)
+    result = await db_session.execute(paginated_stmt)
+    db_records = result.scalars().all()
+
+    pydantic_records = [_convert_sa_to_pydantic(rec) for rec in db_records]
+
+    return pydantic_records, total_items
