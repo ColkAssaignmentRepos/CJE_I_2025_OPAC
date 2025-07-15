@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import model
 from src.db import _model as sa_model
+from src.db._convert import _convert_sa_to_pydantic
 
 
-async def get_or_create_creator(
+async def __get_or_create_creator(
     db_session: AsyncSession, name: str
 ) -> sa_model.Creator:
     """
@@ -26,13 +27,13 @@ async def get_or_create_creator(
 
 async def create_record(
     db_session: AsyncSession, pydantic_record: model.Record
-) -> sa_model.Record:
+) -> model.Record:
     """
     Converts a Pydantic Record to a SQLAlchemy Record and saves it to the database.
     """
     # Handle many-to-many relationship for creators
     creators = [
-        await get_or_create_creator(db_session, name)
+        await __get_or_create_creator(db_session, name)
         for name in pydantic_record.metadata.dc.creator
     ]
 
@@ -83,4 +84,4 @@ async def create_record(
 
     db_session.add(db_record)
     await db_session.flush()
-    return db_record
+    return _convert_sa_to_pydantic(db_record)
