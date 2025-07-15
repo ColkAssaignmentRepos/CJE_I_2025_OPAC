@@ -21,3 +21,8 @@ dev = [
 [tool.mypy]
 strict = true
 plugins = "sqlalchemy.ext.mypy.plugin"
+exclude = ["alembic", "playground"]
+
+[tool.ruff]
+line-length = 88
+exclude = ["alembic", "playground"]
