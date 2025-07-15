@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src import model
 from src.db import _model as sa_model
@@ -9,7 +10,7 @@ from src.db._convert import _convert_sa_to_pydantic
 
 
 async def __get_or_create_creator(
-    db_session: AsyncSession, name: str
+        db_session: AsyncSession, name: str
 ) -> sa_model.Creator:
     """
     Retrieve a creator by name, or create it if it doesn't exist.
@@ -18,7 +19,7 @@ async def __get_or_create_creator(
     result = await db_session.execute(stmt)
     creator = result.scalar_one_or_none()
     if not creator:
-        creator = sa_model.Creator(name=name)
+        creator = sa_model.Creator(name=name)  # type: ignore[call-arg]
         db_session.add(creator)
         # We flush to get the ID without committing the whole transaction
         await db_session.flush()
@@ -26,7 +27,7 @@ async def __get_or_create_creator(
 
 
 async def create_record(
-    db_session: AsyncSession, pydantic_record: model.Record
+        db_session: AsyncSession, pydantic_record: model.Record
 ) -> model.Record:
     """
     Converts a Pydantic Record to a SQLAlchemy Record and saves it to the database.
@@ -38,7 +39,7 @@ async def create_record(
     ]
 
     # Create the main SQLAlchemy Record object without relationship fields
-    db_record = sa_model.Record(
+    db_record = sa_model.Record(  # type: ignore[call-arg]
         datestamp=pydantic_record.header.datestamp,
         title=pydantic_record.metadata.dc.title,
         publisher=pydantic_record.metadata.dc.publisher,
@@ -84,4 +85,23 @@ async def create_record(
 
     db_session.add(db_record)
     await db_session.flush()
-    return _convert_sa_to_pydantic(db_record)
+
+    # Re-fetch the record with all relationships loaded to avoid lazy loading issues.
+    stmt = (
+        select(sa_model.Record)
+        .where(sa_model.Record.id == db_record.id)
+        .options(
+            selectinload(sa_model.Record.creators),
+            selectinload(sa_model.Record.identifiers),
+            selectinload(sa_model.Record.publication_places),
+            selectinload(sa_model.Record.issued),
+            selectinload(sa_model.Record.subjects),
+            selectinload(sa_model.Record.see_alsos),
+            selectinload(sa_model.Record.same_as_links),
+            selectinload(sa_model.Record.thumbnails),
+        )
+    )
+    result = await db_session.execute(stmt)
+    loaded_db_record = result.scalar_one()
+
+    return _convert_sa_to_pydantic(loaded_db_record)
