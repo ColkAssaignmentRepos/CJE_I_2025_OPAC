@@ -93,6 +93,7 @@ venv/
 
 # CJE1 Tools
 cje1install.sh
+cje1gw/
 
 # database
 *.sqlite3
